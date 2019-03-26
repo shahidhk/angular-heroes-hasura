@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Hero } from '../hero';
-import {Apollo} from 'apollo-angular';
-import gql from 'graphql-tag';
+import { GetHeroes } from '../subscription.service';
 
 @Component({
     selector: 'app-heroes',
@@ -12,10 +11,10 @@ import gql from 'graphql-tag';
 export class HeroesComponent implements OnInit {
 
     heroes: Hero[];
-    loading = true;
+    loading = false;
     error: any;
 
-    constructor(private apollo: Apollo) { }
+    constructor(private getHeroesSub: GetHeroes) {}
 
     ngOnInit() {
         this.getHeroes();
@@ -23,25 +22,9 @@ export class HeroesComponent implements OnInit {
 
     selectedHero: Hero;
 
-    onSelect(hero: Hero): void {
-        this.selectedHero = hero;
-    }
-
-
     getHeroes(): void {
-        this.apollo.watchQuery({
-            query: gql`
-              query getHeroes {
-                hero {
-                  id
-                  name
-                }
-              }
-            `,
-        }).valueChanges.subscribe(result => {
+        this.getHeroesSub.subscribe().forEach(result=> {
             this.heroes = result.data && result.data.hero;
-            this.loading = result.loading;
-            this.error = result.errors;
-        });
+        })
     }
 }
